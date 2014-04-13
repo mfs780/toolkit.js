@@ -35,11 +35,78 @@ var Toolkit = {
         }
         return this.reduce(store.reverse(), iterator, memo, context);
     },
-    some: function (list, predicate, context) {
-        result = false;
+    find: function (list, predicate, context) {
+        var result;
+        if (list === null) return result;
+        this.some(list, function (value, index, list) {
+            if (predicate.call(context, value, index, list)) {
+                result = value;
+                return true;
+            }
+        }, context);
+        return result;
+    },
+    filter: function (list, predicate, context) {
+        var result = [];
+        if (list === null) return result;
         this.each(list, function (value, index, list) {
-            if (result || result = predicate.call(context, value, index, list)) return [];            
+            if (predicate.call(context, value, index, list)) {
+                result.push(value);
+            }
+        }, context);
+        return result;
+    },
+    where: function (list, properties) {
+        if (list === null) return [];
+        return this.filter(list, function (value, index, list) {
+            var result = true;
+            for (var p in properties) {
+                if (properties[p] !== value[p]) {
+                    result = false;
+                }
+            }
+            return result;
+        });
+    },
+    findWhere: function (list, properties) {
+        if (list === null) return result;
+        return this.find(list, function (value, index, list) {
+            var result = true;
+            for (var p in properties)
+            if (properties[p] !== value[p]) result = false;
+            return result;
+        });
+    },
+    reject: function (list, predicate, context) {
+        if (list === null) return [];
+        return this.filter(list, function (value, index, list) {
+            return !predicate.call(context, value, index, list);
+        }, context);
+    },
+    every: function (list, predicate, context) {
+        if (list === this.filter(list, predicate, context)) return true;
+        else return false;
+    },
+    some: function (list, predicate, context) {
+        var result = false;
+        this.each(list, function (value, index, list) {
+            if (result || (result = predicate.call(context, value, index, list))) return [];
         }, context);
         return !!result;
+    },
+    contains: function (list, value) {
+        if (list === null) return false;
+        result = false;
+        this.some(list, function (v, index, list) {
+            if (v === value) result = true;
+        });
+        return result;
+    },
+    invoke: function (list, methodName) {
+        var args = Array.prototype.slice.call(arguments, 2);
+        var isFunc = _.isFunction(methodName);
+        return Toolkit.map(list, function (value) {
+            return (isFunc ? method : value[methodName]).apply(value, args);
+        });
     }
 };
